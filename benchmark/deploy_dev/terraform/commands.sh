@@ -238,5 +238,15 @@ export KUBECONFIG=$(pwd)/config
 # GRAFANA ACCESS ON localhost:8080 (admin/admin)
 ssh -i picodata.pem -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -L 3000:localhost:3000 ubuntu@130.61.229.200
 
+# AFTER TEST: GET PNG ARCHIVE
+# ON MASTER
+$duration = $end_in_unix_time - $begin_in_unix_time
+$begin_of_graphics = $begin_in_unix_time - $duration / 10
+$end_of_graphics = $end_in_unix_time + $duration / 10
+cd grafana-on-premise
+./get_png.sh $begin_of_graphics $end_of_graphics
+# ON LOCAL MACHINE
+scp -i picodata.pem -o StrictHostKeyChecking=no ubuntu@130.193.39.175:/home/ubuntu/png.tar.gz .
+
 ### DESTROY CLUSTER (LOCAL)
 # terraform destroy -force
