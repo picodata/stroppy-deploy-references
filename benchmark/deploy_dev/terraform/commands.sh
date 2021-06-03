@@ -202,25 +202,28 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 chmod 600 $HOME/.kube/config
 # monitoring
 kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
-#kubectl create namespace monitoring
+kubectl create namespace monitoring
 # helm repo add grafana https://grafana.github.io/helm-charts
-# helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-# helm repo update
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
 # helm install loki grafana/loki-stack --namespace monitoring
-# helm install grafana-stack prometheus-community/kube-prometheus-stack --namespace monitoring
-kubectl apply -f /home/ubuntu/metrics-server.yaml
+helm install grafana-stack prometheus-community/kube-prometheus-stack --set grafana.enables=false --namespace monitoring
+# kubectl apply -f /home/ubuntu/prometheus-grafana.yaml
+# kubectl apply -f /home/ubuntu/metrics-server.yaml
 # kubectl apply -f /home/ubuntu/ingress-grafana.yaml
 # grafana-on-premise
-ansible-galaxy install cloudalchemy.prometheus
+# ansible-galaxy install cloudalchemy.prometheus
 ansible-galaxy install cloudalchemy.grafana
-ansible-galaxy install cloudalchemy.node_exporter
+# ansible-galaxy install cloudalchemy.node_exporter
 ansible-galaxy collection install community.grafana
 cd ../grafana-on-premise
+export prometheus_cluster_ip=$(kubectl get svc -n monitoring | grep grafana-stack-kube-prometh-prometheus | awk "{ print$ 3 }")
+sed -i "s/      ds_url: http:\/\/localhost:9090/      ds_url: http:\/\/$prometheus_cluster_ip:9090/g" grafana-on-premise.yml
 ansible-playbook grafana-on-premise.yml
-ansible-playbook node_exporter.yml
-echo '  - worker-1:9100' | sudo tee -a /etc/prometheus/file_sd/node.yml
-echo '  - worker-2:9100' | sudo tee -a /etc/prometheus/file_sd/node.yml
-echo '  - worker-3:9100' | sudo tee -a /etc/prometheus/file_sd/node.yml
+# ansible-playbook node_exporter.yml
+# echo '  - worker-1:9100' | sudo tee -a /etc/prometheus/file_sd/node.yml
+# echo '  - worker-2:9100' | sudo tee -a /etc/prometheus/file_sd/node.yml
+# echo '  - worker-3:9100' | sudo tee -a /etc/prometheus/file_sd/node.yml
 EOO
 chmod +x deploy_kubernetes.sh
 ./deploy_kubernetes.sh
@@ -235,8 +238,8 @@ scp -i picodata.pem -o StrictHostKeyChecking=no ubuntu@130.61.16.109:/home/ubunt
 sed -i 's/10.1.20.156/localhost/g' config
 export KUBECONFIG=$(pwd)/config
 
-# GRAFANA ACCESS ON localhost:8080 (admin/admin)
-ssh -i picodata.pem -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -L 3000:localhost:3000 ubuntu@130.61.229.200
+# GRAFANA-ON-PREMISE ACCESS ON localhost:3000 (admin/admin)
+ssh -i picodata.pem -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -L 3000:localhost:3000 ubuntu@130.61.16.109
 
 # AFTER TEST: GET PNG ARCHIVE
 # ON MASTER

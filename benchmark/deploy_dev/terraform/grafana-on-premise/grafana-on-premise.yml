@@ -2,8 +2,6 @@
 - hosts: grafana
   become: true
   roles:
-  - cloudalchemy.prometheus
-  - cloudalchemy.node_exporter
   - cloudalchemy.grafana
   vars:
     prometheus_targets:
@@ -16,6 +14,9 @@
     grafana_security:
       admin_user: admin
       admin_password: admin
+    
+    grafana_address: 0.0.0.0
+    grafana_port: 3000
 
   tasks:
   - name: Install additional soft
@@ -29,17 +30,17 @@
       - unzip
       - zip
   
-  - name: Touch loki-local-config.yaml in /etc/prometheus/
+  - name: Touch loki-local-config.yaml in /etc/
     ansible.builtin.file:
-      path: /etc/prometheus/loki-local-config.yaml
+      path: /etc/loki-local-config.yaml
       state: touch
       owner: root
-      group: prometheus
+      group: root
       mode: '0640'
 
-  - name: Add config in /etc/prometheus/loki-local-config.yaml
+  - name: Add config in /etc/loki-local-config.yaml
     blockinfile:
-      path: /etc/prometheus/loki-local-config.yaml
+      path: /etc/loki-local-config.yaml
       block: |2
           auth_enabled: false
 
@@ -131,7 +132,7 @@
           [Service]
           Type=simple
           User=root
-          ExecStart=/usr/local/bin/loki-linux-amd64 -config.file /etc/prometheus/loki-local-config.yaml
+          ExecStart=/usr/local/bin/loki-linux-amd64 -config.file /etc/loki-local-config.yaml
 
           [Install]
           WantedBy=multi-user.target
@@ -158,17 +159,17 @@
       dest: /usr/local/bin/
       remote_src: yes
 
-  - name: Touch promtail-local-config.yaml in /etc/prometheus/
+  - name: Touch promtail-local-config.yaml in /etc/
     ansible.builtin.file:
-      path: /etc/prometheus/promtail-local-config.yaml
+      path: /etc/promtail-local-config.yaml
       state: touch
       owner: root
-      group: prometheus
+      group: root
       mode: '0640'
 
-  - name: Add config in /etc/prometheus/promtail-local-config.yaml
+  - name: Add config in /etc/promtail-local-config.yaml
     blockinfile:
-      path: /etc/prometheus/promtail-local-config.yaml
+      path: /etc/promtail-local-config.yaml
       block: |2
           server:
             http_listen_port: 9080
@@ -208,7 +209,7 @@
           [Service]
           Type=simple
           User=root
-          ExecStart=/usr/local/bin/promtail-linux-amd64 -config.file /etc/prometheus/promtail-local-config.yaml
+          ExecStart=/usr/local/bin/promtail-linux-amd64 -config.file /etc/promtail-local-config.yaml
 
           [Install]
           WantedBy=multi-user.target
@@ -224,7 +225,7 @@
   - name: Create Loki datasource
     community.grafana.grafana_datasource:
       name: Loki
-      grafana_url: http://localhost:3000
+      grafana_url: "http://{{ grafana_address }}:{{ grafana_port }}"
       ds_type: loki
       ds_url: http://localhost:3100
       state: present
@@ -232,7 +233,7 @@
   - name: Create Prometheus datasource
     community.grafana.grafana_datasource:
       name: Prometheus
-      grafana_url: http://localhost:3000
+      grafana_url: "http://{{ grafana_address }}:{{ grafana_port }}"
       ds_type: prometheus
       ds_url: http://localhost:9090
       is_default: yes
@@ -279,17 +280,167 @@
       - libgtk-3-0
       - libpangocairo-1.0-0
 
-  - name: Copy node-exporter-full.json to grafana server
-    ansible.builtin.copy:
-      src: node-exporter-full.json
-      dest: /tmp/node-exporter-full.json
+  - name: Extract dashboards.tgz into /tmp
+    ansible.builtin.unarchive:
+      src: dashboards.tgz
+      dest: /tmp
 
   - name: Import Grafana dashboard node-exporter-full
     community.grafana.grafana_dashboard:
-      grafana_url: http://localhost:3000
+      grafana_url: "http://{{ grafana_address }}:{{ grafana_port }}"
       url_password: "admin"
       url_username: "admin"
       state: present
       commit_message: Updated by ansible
       overwrite: yes
       path: /tmp/node-exporter-full.json
+
+  - name: Import Grafana dashboard Kubernetes_API_server
+    community.grafana.grafana_dashboard:
+      grafana_url: "http://{{ grafana_address }}:{{ grafana_port }}"
+      url_password: "admin"
+      url_username: "admin"
+      state: present
+      commit_message: Updated by ansible
+      overwrite: yes
+      path: /tmp/Kubernetes_API_server.json
+
+  - name: Import Grafana dashboard Kubernetes_Compute_Resources_Cluster
+    community.grafana.grafana_dashboard:
+      grafana_url: "http://{{ grafana_address }}:{{ grafana_port }}"
+      url_password: "admin"
+      url_username: "admin"
+      state: present
+      commit_message: Updated by ansible
+      overwrite: yes
+      path: /tmp/Kubernetes_Compute_Resources_Cluster.json
+
+  - name: Import Grafana dashboard Kubernetes_ComputeResources_Namespace(Pods)
+    community.grafana.grafana_dashboard:
+      grafana_url: "http://{{ grafana_address }}:{{ grafana_port }}"
+      url_password: "admin"
+      url_username: "admin"
+      state: present
+      commit_message: Updated by ansible
+      overwrite: yes
+      path: /tmp/Kubernetes_ComputeResources_Namespace(Pods).json
+
+  - name: Import Grafana dashboard Kubernetes_ComputeResources_Namespace(Workloads)
+    community.grafana.grafana_dashboard:
+      grafana_url: "http://{{ grafana_address }}:{{ grafana_port }}"
+      url_password: "admin"
+      url_username: "admin"
+      state: present
+      commit_message: Updated by ansible
+      overwrite: yes
+      path: /tmp/Kubernetes_ComputeResources_Namespace(Workloads).json
+
+  - name: Import Grafana dashboard Kubernetes_ComputeResources_Node(Pods)
+    community.grafana.grafana_dashboard:
+      grafana_url: "http://{{ grafana_address }}:{{ grafana_port }}"
+      url_password: "admin"
+      url_username: "admin"
+      state: present
+      commit_message: Updated by ansible
+      overwrite: yes
+      path: /tmp/Kubernetes_ComputeResources_Node(Pods).json
+
+  - name: Import Grafana dashboard Kubernetes_ComputeResources_Workload
+    community.grafana.grafana_dashboard:
+      grafana_url: "http://{{ grafana_address }}:{{ grafana_port }}"
+      url_password: "admin"
+      url_username: "admin"
+      state: present
+      commit_message: Updated by ansible
+      overwrite: yes
+      path: /tmp/Kubernetes_ComputeResources_Workload.json
+
+  - name: Import Grafana dashboard Kubernetes_Kubelet
+    community.grafana.grafana_dashboard:
+      grafana_url: "http://{{ grafana_address }}:{{ grafana_port }}"
+      url_password: "admin"
+      url_username: "admin"
+      state: present
+      commit_message: Updated by ansible
+      overwrite: yes
+      path: /tmp/Kubernetes_Kubelet.json
+
+  - name: Import Grafana dashboard Kubernetes_Networking_Cluster
+    community.grafana.grafana_dashboard:
+      grafana_url: "http://{{ grafana_address }}:{{ grafana_port }}"
+      url_password: "admin"
+      url_username: "admin"
+      state: present
+      commit_message: Updated by ansible
+      overwrite: yes
+      path: /tmp/Kubernetes_Networking_Cluster.json
+
+  - name: Import Grafana dashboard Kubernetes_Networking_Namespace(Pods)
+    community.grafana.grafana_dashboard:
+      grafana_url: "http://{{ grafana_address }}:{{ grafana_port }}"
+      url_password: "admin"
+      url_username: "admin"
+      state: present
+      commit_message: Updated by ansible
+      overwrite: yes
+      path: /tmp/Kubernetes_Networking_Namespace(Pods).json
+
+  - name: Import Grafana dashboard Kubernetes_Networking_Namespace(Workload)
+    community.grafana.grafana_dashboard:
+      grafana_url: "http://{{ grafana_address }}:{{ grafana_port }}"
+      url_password: "admin"
+      url_username: "admin"
+      state: present
+      commit_message: Updated by ansible
+      overwrite: yes
+      path: /tmp/Kubernetes_Networking_Namespace(Workload).json
+
+  - name: Import Grafana dashboard Kubernetes_Networking_Pod
+    community.grafana.grafana_dashboard:
+      grafana_url: "http://{{ grafana_address }}:{{ grafana_port }}"
+      url_password: "admin"
+      url_username: "admin"
+      state: present
+      commit_message: Updated by ansible
+      overwrite: yes
+      path: /tmp/Kubernetes_Networking_Pod.json
+
+  - name: Import Grafana dashboard Kubernetes_Networking_Workload
+    community.grafana.grafana_dashboard:
+      grafana_url: "http://{{ grafana_address }}:{{ grafana_port }}"
+      url_password: "admin"
+      url_username: "admin"
+      state: present
+      commit_message: Updated by ansible
+      overwrite: yes
+      path: /tmp/Kubernetes_Networking_Workload.json
+
+  - name: Import Grafana dashboard Kubernetes_PersistentVolumes
+    community.grafana.grafana_dashboard:
+      grafana_url: "http://{{ grafana_address }}:{{ grafana_port }}"
+      url_password: "admin"
+      url_username: "admin"
+      state: present
+      commit_message: Updated by ansible
+      overwrite: yes
+      path: /tmp/Kubernetes_PersistentVolumes.json
+
+  - name: Import Grafana dashboard Kubernetes_Scheduler
+    community.grafana.grafana_dashboard:
+      grafana_url: "http://{{ grafana_address }}:{{ grafana_port }}"
+      url_password: "admin"
+      url_username: "admin"
+      state: present
+      commit_message: Updated by ansible
+      overwrite: yes
+      path: /tmp/Kubernetes_Scheduler.json
+
+  - name: Import Grafana dashboard Kubernetes_StatefulSets
+    community.grafana.grafana_dashboard:
+      grafana_url: "http://{{ grafana_address }}:{{ grafana_port }}"
+      url_password: "admin"
+      url_username: "admin"
+      state: present
+      commit_message: Updated by ansible
+      overwrite: yes
+      path: /tmp/Kubernetes_StatefulSets.json
