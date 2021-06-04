@@ -111,13 +111,6 @@ resource "oci_core_instance" "k8s_instance" {
     "freeformkey${count.index}" = "freeformvalue${count.index}"
   }
 
-  preemptible_instance_config {
-    preemption_action {
-      type = "TERMINATE"
-      preserve_boot_volume = false
-    }
-  }
-
   timeouts {
     create = "60m"
   }
