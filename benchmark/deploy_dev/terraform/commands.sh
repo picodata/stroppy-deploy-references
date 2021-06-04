@@ -246,6 +246,7 @@ ssh -i picodata.pem -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -L 300
 $duration = $end_in_unix_time - $begin_in_unix_time
 $begin_of_graphics = $begin_in_unix_time - $duration / 10
 $end_of_graphics = $end_in_unix_time + $duration / 10
+REPLACE '#ip_array' IN get_png.sh
 cd grafana-on-premise
 ./get_png.sh $begin_of_graphics $end_of_graphics
 # ON LOCAL MACHINE
