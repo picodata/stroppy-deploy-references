@@ -1,10 +1,10 @@
 # Administration > Tenancy Details (Name: owrussia)
 variable "tenancy_ocid" {
-  default = "ocid1.tenancy.oc1..aaaaaaaafqgn6pw772mo2ln2ywcaiijaufrnvh3bpetam34m2udykglixolq"
+  default = "ocid1.tenancy.oc1..aaaaaaaa57fvsimy5ma5gs7e6yzmhbypafasi2v3huvbcgrv3sxmos4tvawa"
 }
 # Identity > Users > User Details (user: xdb)
 variable "user_ocid" {
-  default = "ocid1.user.oc1..aaaaaaaaxenvjykcpfynxtosbbmddulqvmb34ot2bbg5dq2d4flwvsmjsxsq"
+  default = "ocid1.user.oc1..aaaaaaaa4nnnmsokuq5emtptzzaf5pxgrv3qovuytokfpfej35l3ni5ukijq"
 }
 # Identity > Users > User Details > API Keys
 variable "fingerprint" {
@@ -21,7 +21,7 @@ variable "region" {
 }
 # Identity > Compartments (Name: XDB)
 variable "compartment_ocid" {
-  default = "ocid1.compartment.oc1..aaaaaaaa5soo5hr34y4i5hq3bkfxkg5t6zf7e23c3vlmempe6ppy34za76eq"
+  default = "ocid1.compartment.oc1..aaaaaaaahdkwtglvmc7yi37ohu5n7fcbfneufqxxurmj3njokujp5nfoxjpa"
 }
 
 variable "ssh_public_key" {
@@ -68,14 +68,6 @@ variable "flex_instance_image_ocid" {
 # !!!
 variable "db_size" {
   default = "50" # size in GBs
-}
-
-variable "tag_namespace_description" {
-  default = "ns-stroppy-cluster"
-}
-
-variable "tag_namespace_name" {
-  default = "ns-stroppy-cluster"
 }
 
 resource "oci_core_instance" "k8s_instance" {
@@ -202,13 +194,6 @@ resource "oci_core_subnet" "k8s_cluster_subnet" {
 data "oci_identity_availability_domain" "ad" {
   compartment_id = var.compartment_ocid
   ad_number      = 1
-}
-
-resource "oci_identity_tag_namespace" "tag-namespace1" {
-  #Required
-  compartment_id = var.compartment_ocid
-  description    = var.tag_namespace_description
-  name           = var.tag_namespace_name
 }
 
 resource "oci_core_security_list" "etcd2_security_list" {
