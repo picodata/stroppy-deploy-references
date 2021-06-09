@@ -214,6 +214,42 @@ cd ../grafana-on-premise
 export prometheus_cluster_ip=$(kubectl get svc -n monitoring | grep grafana-stack-kube-prometh-prometheus | awk "{ print$ 3 }")
 sed -i "s/      ds_url: http:\/\/localhost:9090/      ds_url: http:\/\/$prometheus_cluster_ip:9090/g" grafana-on-premise.yml
 ansible-playbook grafana-on-premise.yml
+
+# attach, mkfs and mount external BlockVolume - after creating folder /opt/local-path-provisioner/ by rancher local-path-provisioner
+# cat terraform.tfstate | grep iqn                                                                                      
+#             "iqn": "iqn.2015-12.com.oracleiaas:b13e519e-85b0-4ed7-b129-3095390efcea", # master
+#             "iqn": "iqn.2015-12.com.oracleiaas:15474b94-a39c-44e0-b01c-e6e791792eb2", # worker-1
+#             "iqn": "iqn.2015-12.com.oracleiaas:e0c0f6ae-ee02-43a3-b294-406d276d1108", # worker-2
+#             "iqn": "iqn.2015-12.com.oracleiaas:1ca7cd19-837d-4bad-a93e-c66376d975b1", # worker-3
+# ssh -o StrictHostKeyChecking=no worker-1
+sudo iscsiadm -m node -o new -T iqn.2015-12.com.oracleiaas:15474b94-a39c-44e0-b01c-e6e791792eb2 -p 169.254.2.2:3260
+sudo iscsiadm -m node -o update -T iqn.2015-12.com.oracleiaas:15474b94-a39c-44e0-b01c-e6e791792eb2 -n node.startup -v automatic
+sudo iscsiadm -m node -T iqn.2015-12.com.oracleiaas:15474b94-a39c-44e0-b01c-e6e791792eb2 -p 169.254.2.2:3260 -l
+sleep 5
+sudo parted /dev/sdb mklabel gpt
+sudo parted -a optimal /dev/sdb mkpart primary ext4 0% 1TB
+sudo mkfs.ext4 /dev/sdb1
+sudo mount /dev/sdb1 /opt/local-path-provisioner/
+
+# ssh -o StrictHostKeyChecking=no worker-2
+sudo iscsiadm -m node -o new -T iqn.2015-12.com.oracleiaas:e0c0f6ae-ee02-43a3-b294-406d276d1108 -p 169.254.2.2:3260
+sudo iscsiadm -m node -o update -T iqn.2015-12.com.oracleiaas:e0c0f6ae-ee02-43a3-b294-406d276d1108 -n node.startup -v automatic
+sudo iscsiadm -m node -T iqn.2015-12.com.oracleiaas:e0c0f6ae-ee02-43a3-b294-406d276d1108 -p 169.254.2.2:3260 -l
+sleep 5
+sudo parted /dev/sdb mklabel gpt
+sudo parted -a optimal /dev/sdb mkpart primary ext4 0% 1TB
+sudo mkfs.ext4 /dev/sdb1
+sudo mount /dev/sdb1 /opt/local-path-provisioner/
+
+# ssh -o StrictHostKeyChecking=no worker-3
+sudo iscsiadm -m node -o new -T iqn.2015-12.com.oracleiaas:1ca7cd19-837d-4bad-a93e-c66376d975b1 -p 169.254.2.2:3260
+sudo iscsiadm -m node -o update -T iqn.2015-12.com.oracleiaas:1ca7cd19-837d-4bad-a93e-c66376d975b1 -n node.startup -v automatic
+sudo iscsiadm -m node -T iqn.2015-12.com.oracleiaas:1ca7cd19-837d-4bad-a93e-c66376d975b1 -p 169.254.2.2:3260 -l
+sleep 5
+sudo parted /dev/sdb mklabel gpt
+sudo parted -a optimal /dev/sdb mkpart primary ext4 0% 1TB
+sudo mkfs.ext4 /dev/sdb1
+sudo mount /dev/sdb1 /opt/local-path-provisioner/
 EOO
 chmod +x deploy_kubernetes.sh
 ./deploy_kubernetes.sh
