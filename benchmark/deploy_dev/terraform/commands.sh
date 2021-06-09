@@ -227,7 +227,7 @@ sudo iscsiadm -m node -o update -T iqn.2015-12.com.oracleiaas:15474b94-a39c-44e0
 sudo iscsiadm -m node -T iqn.2015-12.com.oracleiaas:15474b94-a39c-44e0-b01c-e6e791792eb2 -p 169.254.2.2:3260 -l
 sleep 5
 sudo parted /dev/sdb mklabel gpt
-sudo parted -a optimal /dev/sdb mkpart primary ext4 0% 1TB
+sudo parted -a optimal /dev/sdb mkpart primary ext4 0% 100%
 sudo mkfs.ext4 /dev/sdb1
 sudo mount /dev/sdb1 /opt/local-path-provisioner/
 
@@ -237,7 +237,7 @@ sudo iscsiadm -m node -o update -T iqn.2015-12.com.oracleiaas:e0c0f6ae-ee02-43a3
 sudo iscsiadm -m node -T iqn.2015-12.com.oracleiaas:e0c0f6ae-ee02-43a3-b294-406d276d1108 -p 169.254.2.2:3260 -l
 sleep 5
 sudo parted /dev/sdb mklabel gpt
-sudo parted -a optimal /dev/sdb mkpart primary ext4 0% 1TB
+sudo parted -a optimal /dev/sdb mkpart primary ext4 0% 100%
 sudo mkfs.ext4 /dev/sdb1
 sudo mount /dev/sdb1 /opt/local-path-provisioner/
 
@@ -247,7 +247,7 @@ sudo iscsiadm -m node -o update -T iqn.2015-12.com.oracleiaas:1ca7cd19-837d-4bad
 sudo iscsiadm -m node -T iqn.2015-12.com.oracleiaas:1ca7cd19-837d-4bad-a93e-c66376d975b1 -p 169.254.2.2:3260 -l
 sleep 5
 sudo parted /dev/sdb mklabel gpt
-sudo parted -a optimal /dev/sdb mkpart primary ext4 0% 1TB
+sudo parted -a optimal /dev/sdb mkpart primary ext4 0% 100%
 sudo mkfs.ext4 /dev/sdb1
 sudo mount /dev/sdb1 /opt/local-path-provisioner/
 EOO
