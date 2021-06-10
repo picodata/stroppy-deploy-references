@@ -194,7 +194,7 @@ EOF
 
 sudo sed -i "s/ingress_nginx_enabled: false/ingress_nginx_enabled: true/g" inventory/local/group_vars/k8s-cluster/addons.yml
 echo "docker_dns_servers_strict: no" >> inventory/local/group_vars/k8s-cluster/k8s-cluster.yml
-# nano inventory/local/group_vars/k8s-cluster/addons.yml (!!!)
+sed -i 's/kube_network_plugin: calico/kube_network_plugin: flannel/g' inventory/local/group_vars/k8s_cluster/k8s-cluster.yml
 ansible-playbook -b -e ignore_assert_errors=yes -i inventory/local/hosts.ini cluster.yml
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
