@@ -153,6 +153,11 @@ sudo iptables --flush
 ssh 10.1.20.3 -o StrictHostKeyChecking=no 'sudo iptables --flush'
 ssh 10.1.20.25 -o StrictHostKeyChecking=no 'sudo iptables --flush'
 ssh 10.1.20.12 -o StrictHostKeyChecking=no 'sudo iptables --flush'
+# Set tz
+sudo ln -fs /usr/share/zoneinfo/Europe/Moscow /etc/localtime
+ssh 10.1.20.3 -o StrictHostKeyChecking=no 'sudo ln -fs /usr/share/zoneinfo/Europe/Moscow /etc/localtime'
+ssh 10.1.20.25 -o StrictHostKeyChecking=no 'sudo ln -fs /usr/share/zoneinfo/Europe/Moscow /etc/localtime'
+ssh 10.1.20.12 -o StrictHostKeyChecking=no 'sudo ln -fs /usr/share/zoneinfo/Europe/Moscow /etc/localtime'
 ### /Oracle.Cloud
 sudo apt-get update
 sudo apt-get install -y sshpass python3-pip git htop sysstat
