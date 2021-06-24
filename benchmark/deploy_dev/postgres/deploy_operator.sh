@@ -12,5 +12,7 @@ sleep 1
 helm install postgres-operator postgres-operator/charts/postgres-operator
 echo "Waiting postgres operator for 60 seconds..."
 sleep 60
-kubectl apply -f postgres-manifest.yaml
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+kubectl apply -f "$SCRIPT_DIR/postgres-manifest.yaml"
 rm -rf postgres-operator v1.6.0.zip
